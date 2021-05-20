@@ -49,8 +49,8 @@ def start_server():
     btnStop.config(state=tk.NORMAL)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print socket.AF_INET
-    print socket.SOCK_STREAM
+    print(socket.AF_INET)
+    print(socket.SOCK_STREAM)
 
     server.bind((HOST_ADDR, HOST_PORT))
     server.listen(5)  # server is listening for client connection
@@ -84,8 +84,9 @@ def send_receive_client_message(client_connection, client_ip_addr):
     client_msg = " "
 
     # send welcome message to client
-    client_name  = client_connection.recv(4096)
-    client_connection.send("Welcome " + client_name + ". Use 'exit' to quit")
+    client_name  = client_connection.recv(4096).decode()
+    welcome_msg = "Welcome " + client_name + ". Use 'exit' to quit"
+    client_connection.send(welcome_msg.encode())
 
     clients_names.append(client_name)
 
@@ -93,7 +94,7 @@ def send_receive_client_message(client_connection, client_ip_addr):
 
 
     while True:
-        data = client_connection.recv(4096)
+        data = client_connection.recv(4096).decode()
         if not data: break
         if data == "exit": break
 
@@ -104,13 +105,15 @@ def send_receive_client_message(client_connection, client_ip_addr):
 
         for c in clients:
             if c != client_connection:
-                c.send(sending_client_name + "->" + client_msg)
+                server_msg = str(sending_client_name + "->" + client_msg)
+                c.send(server_msg.encode())
 
     # find the client index then remove from both lists(client name list and connection list)
     idx = get_client_index(clients, client_connection)
     del clients_names[idx]
     del clients[idx]
-    client_connection.send("BYE!")
+    server_msg = "BYE!"
+    client_connection.send(server_msg.encode())
     client_connection.close()
 
     update_client_names_display(clients_names)  # update client names display
